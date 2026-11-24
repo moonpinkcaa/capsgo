@@ -2,6 +2,18 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Operator\UserController;
+use App\Http\Controllers\Operator\SchoolProfileController;
+use App\Http\Controllers\Operator\TeacherProfileController;
+use App\Http\Controllers\Operator\FacilityController;
+use App\Http\Controllers\Operator\ExtracurricularController;
+use App\Http\Controllers\Operator\SchoolEventController;
+use App\Http\Controllers\Operator\AchievementController;
+use App\Models\TeacherProfile;
+use App\Models\Facility;
+use App\Models\Extracurricular;
+use App\Models\SchoolEvent;
+use App\Models\Achievement;
+use App\Models\SchoolProfile;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,23 +41,32 @@ Route::get('/struktur-organisasi', function () {
 })->name('public.organization');
 
 Route::get('/guru', function () {
-    return Inertia::render('Public/Teachers/Index');
+    $teachers = TeacherProfile::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Teachers/Index', ['teachers' => $teachers]);
 })->name('public.teachers.index');
 
 Route::get('/fasilitas', function () {
-    return Inertia::render('Public/Facilities/Index');
+    $facilities = Facility::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Facilities/Index', ['facilities' => $facilities]);
 })->name('public.facilities.index');
 
 Route::get('/ekstrakurikuler', function () {
-    return Inertia::render('Public/Extracurriculars/Index');
+    $extracurriculars = Extracurricular::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Extracurriculars/Index', ['extracurriculars' => $extracurriculars]);
 })->name('public.extracurriculars.index');
 
 Route::get('/kegiatan', function () {
-    return Inertia::render('Public/Events/Index');
+    $events = SchoolEvent::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Events/Index', ['events' => $events]);
 })->name('public.events.index');
 
+Route::get('/kegiatan/{event}', function (\App\Models\SchoolEvent $event) {
+    return Inertia::render('Public/Events/Show', ['event' => $event]);
+})->name('public.events.show');
+
 Route::get('/prestasi', function () {
-    return Inertia::render('Public/Achievements/Index');
+    $achievements = Achievement::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Achievements/Index', ['achievements' => $achievements]);
 })->name('public.achievements.index');
 
 Route::get('/kontak', function () {
@@ -103,50 +124,66 @@ Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator
         return Inertia::render('Operator/Dashboard');
     })->name('dashboard');
 
-    // Manajemen Akun Guru oleh Operator (PIC: Anggota 1)
+    // Manajemen Akun Guru (Anggota 1)
     Route::get('/akun-guru', [UserController::class, 'index'])->name('users.index');
     Route::get('/akun-guru/tambah', [UserController::class, 'create'])->name('users.create');
     Route::post('/akun-guru', [UserController::class, 'store'])->name('users.store');
     Route::patch('/akun-guru/{user}/toggle', [UserController::class, 'toggleActive'])->name('users.toggle');
 
-    // Modul Konten Publik (PIC: Anggota 2)
-    Route::get('/profil-sekolah', function () {
-        return Inertia::render('Operator/Content/SchoolProfile');
-    })->name('school_profile');
+    // Profil Sekolah (Anggota 2)
+    Route::get('/profil-sekolah', [SchoolProfileController::class, 'edit'])->name('school_profile');
+    Route::put('/profil-sekolah', [SchoolProfileController::class, 'update'])->name('school_profile.update');
 
-    Route::get('/guru', function () {
-        return Inertia::render('Operator/Content/Teachers');
-    })->name('teachers');
+    // Data Guru Publik (Anggota 2)
+    Route::get('/guru', [TeacherProfileController::class, 'index'])->name('teachers.index');
+    Route::get('/guru/tambah', [TeacherProfileController::class, 'create'])->name('teachers.create');
+    Route::post('/guru', [TeacherProfileController::class, 'store'])->name('teachers.store');
+    Route::get('/guru/{teacher}/edit', [TeacherProfileController::class, 'edit'])->name('teachers.edit');
+    Route::put('/guru/{teacher}', [TeacherProfileController::class, 'update'])->name('teachers.update');
+    Route::delete('/guru/{teacher}', [TeacherProfileController::class, 'destroy'])->name('teachers.destroy');
 
-    Route::get('/fasilitas', function () {
-        return Inertia::render('Operator/Content/Facilities');
-    })->name('facilities');
+    // Fasilitas (Anggota 2)
+    Route::get('/fasilitas', [FacilityController::class, 'index'])->name('facilities.index');
+    Route::get('/fasilitas/tambah', [FacilityController::class, 'create'])->name('facilities.create');
+    Route::post('/fasilitas', [FacilityController::class, 'store'])->name('facilities.store');
+    Route::get('/fasilitas/{facility}/edit', [FacilityController::class, 'edit'])->name('facilities.edit');
+    Route::put('/fasilitas/{facility}', [FacilityController::class, 'update'])->name('facilities.update');
+    Route::delete('/fasilitas/{facility}', [FacilityController::class, 'destroy'])->name('facilities.destroy');
 
-    Route::get('/ekstrakurikuler', function () {
-        return Inertia::render('Operator/Content/Extracurriculars');
-    })->name('extracurriculars');
+    // Ekstrakurikuler (Anggota 2)
+    Route::get('/ekstrakurikuler', [ExtracurricularController::class, 'index'])->name('extracurriculars.index');
+    Route::get('/ekstrakurikuler/tambah', [ExtracurricularController::class, 'create'])->name('extracurriculars.create');
+    Route::post('/ekstrakurikuler', [ExtracurricularController::class, 'store'])->name('extracurriculars.store');
+    Route::get('/ekstrakurikuler/{extracurricular}/edit', [ExtracurricularController::class, 'edit'])->name('extracurriculars.edit');
+    Route::put('/ekstrakurikuler/{extracurricular}', [ExtracurricularController::class, 'update'])->name('extracurriculars.update');
+    Route::delete('/ekstrakurikuler/{extracurricular}', [ExtracurricularController::class, 'destroy'])->name('extracurriculars.destroy');
 
-    Route::get('/kegiatan', function () {
-        return Inertia::render('Operator/Content/Events');
-    })->name('events');
+    // Kegiatan & Dokumentasi (Anggota 2)
+    Route::get('/kegiatan', [SchoolEventController::class, 'index'])->name('events.index');
+    Route::get('/kegiatan/tambah', [SchoolEventController::class, 'create'])->name('events.create');
+    Route::post('/kegiatan', [SchoolEventController::class, 'store'])->name('events.store');
+    Route::get('/kegiatan/{event}/edit', [SchoolEventController::class, 'edit'])->name('events.edit');
+    Route::put('/kegiatan/{event}', [SchoolEventController::class, 'update'])->name('events.update');
+    Route::delete('/kegiatan/{event}', [SchoolEventController::class, 'destroy'])->name('events.destroy');
 
-    Route::get('/prestasi', function () {
-        return Inertia::render('Operator/Content/Achievements');
-    })->name('achievements');
+    // Prestasi Siswa (Anggota 2)
+    Route::get('/prestasi', [AchievementController::class, 'index'])->name('achievements.index');
+    Route::get('/prestasi/tambah', [AchievementController::class, 'create'])->name('achievements.create');
+    Route::post('/prestasi', [AchievementController::class, 'store'])->name('achievements.store');
+    Route::get('/prestasi/{achievement}/edit', [AchievementController::class, 'edit'])->name('achievements.edit');
+    Route::put('/prestasi/{achievement}', [AchievementController::class, 'update'])->name('achievements.update');
+    Route::delete('/prestasi/{achievement}', [AchievementController::class, 'destroy'])->name('achievements.destroy');
 
-    // Modul Operasional & Berkas (PIC: Anggota 3)
+    // Operasional & Arsip (Anggota 3)
     Route::get('/folder', function () {
         return Inertia::render('Operator/Documents/Folders');
     })->name('folders');
-
     Route::get('/dokumen', function () {
         return Inertia::render('Operator/Documents/Index');
     })->name('documents');
-
     Route::get('/absensi', function () {
         return Inertia::render('Operator/Operations/Attendance');
     })->name('attendance');
-
     Route::get('/koperasi', function () {
         return Inertia::render('Operator/Operations/Cooperative');
     })->name('cooperative');
