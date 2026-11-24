@@ -2,6 +2,12 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Operator\UserController;
+use App\Models\TeacherProfile;
+use App\Models\Facility;
+use App\Models\Extracurricular;
+use App\Models\SchoolEvent;
+use App\Models\Achievement;
+use App\Models\SchoolProfile;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,23 +35,32 @@ Route::get('/struktur-organisasi', function () {
 })->name('public.organization');
 
 Route::get('/guru', function () {
-    return Inertia::render('Public/Teachers/Index');
+    $teachers = TeacherProfile::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Teachers/Index', ['teachers' => $teachers]);
 })->name('public.teachers.index');
 
 Route::get('/fasilitas', function () {
-    return Inertia::render('Public/Facilities/Index');
+    $facilities = Facility::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Facilities/Index', ['facilities' => $facilities]);
 })->name('public.facilities.index');
 
 Route::get('/ekstrakurikuler', function () {
-    return Inertia::render('Public/Extracurriculars/Index');
+    $extracurriculars = Extracurricular::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Extracurriculars/Index', ['extracurriculars' => $extracurriculars]);
 })->name('public.extracurriculars.index');
 
 Route::get('/kegiatan', function () {
-    return Inertia::render('Public/Events/Index');
+    $events = SchoolEvent::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Events/Index', ['events' => $events]);
 })->name('public.events.index');
 
+Route::get('/kegiatan/{event}', function (\App\Models\SchoolEvent $event) {
+    return Inertia::render('Public/Events/Show', ['event' => $event]);
+})->name('public.events.show');
+
 Route::get('/prestasi', function () {
-    return Inertia::render('Public/Achievements/Index');
+    $achievements = Achievement::where('publication_status','published')->orderBy('created_at','desc')->get();
+    return Inertia::render('Public/Achievements/Index', ['achievements' => $achievements]);
 })->name('public.achievements.index');
 
 Route::get('/kontak', function () {
