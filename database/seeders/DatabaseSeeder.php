@@ -36,5 +36,8 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        // 3. Seed konten publik
+        $this->call(PublicContentSeeder::class);
     }
 }

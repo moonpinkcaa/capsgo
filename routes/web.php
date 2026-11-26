@@ -33,7 +33,9 @@ Route::get('/', function () {
 })->name('public.home');
 
 Route::get('/profil-sekolah', function () {
-    return Inertia::render('Public/SchoolProfile');
+    return Inertia::render('Public/SchoolProfile', [
+        'profile' => SchoolProfile::first(),
+    ]);
 })->name('public.profile');
 
 Route::get('/struktur-organisasi', function () {
@@ -41,7 +43,7 @@ Route::get('/struktur-organisasi', function () {
 })->name('public.organization');
 
 Route::get('/guru', function () {
-    $teachers = TeacherProfile::where('publication_status','published')->orderBy('created_at','desc')->get();
+    $teachers = TeacherProfile::where('is_published', true)->orderBy('created_at','desc')->get();
     return Inertia::render('Public/Teachers/Index', ['teachers' => $teachers]);
 })->name('public.teachers.index');
 
@@ -70,7 +72,9 @@ Route::get('/prestasi', function () {
 })->name('public.achievements.index');
 
 Route::get('/kontak', function () {
-    return Inertia::render('Public/Contact');
+    return Inertia::render('Public/Contact', [
+        'profile' => SchoolProfile::first(),
+    ]);
 })->name('public.contact');
 
 
