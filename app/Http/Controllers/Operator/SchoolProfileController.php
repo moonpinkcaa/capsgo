@@ -18,7 +18,7 @@ class SchoolProfileController extends Controller
             ['school_name' => 'SDN 003 Samarinda']
         );
 
-        return Inertia::render('Operator/Content/SchoolProfile', [
+        return Inertia::render('Operator/Content/SchoolProfile/Edit', [
             'profile' => $profile,
         ]);
     }
